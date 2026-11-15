@@ -6,10 +6,15 @@ and replies in the language each customer writes in.
 
 It runs in two modes:
 
-* **DEMO**: zero API keys. Local JSON files and an offline keyword "AI". `python -m bot` just works,
-  in your terminal, or on Telegram if you add a bot token.
+* **DEMO**: local JSON files, no Google Cloud setup. With zero keys an offline keyword "AI"
+  answers; add a free Gemini API key and **Gemini answers from the same local data**.
+  `python -m bot` just works, in your terminal, or on Telegram if you add a bot token.
 * **LIVE**: Gemini answers questions, a Google Sheet holds the FAQ the owner edits, and Google
   Calendar holds the bookings.
+
+**Tech stack:** Python 3.11+, asyncio, aiogram 3 (Telegram Bot API), Google Gemini via
+`google-genai` (structured JSON output), Google Sheets (`gspread`) and Google Calendar API,
+pydantic v2 + pydantic-settings, pytest + pytest-asyncio.
 
 ## What it does
 
@@ -58,10 +63,22 @@ so `/today`, `/bookings` and `/cancel <id>` work.
 Edit `data/faq.json` while the bot runs and the changes are picked up on the next message.
 Bookings are written to `data/bookings.json` (git-ignored).
 
+### DEMO with real AI (just a Gemini key)
+
+Get a free key at <https://aistudio.google.com/apikey> and set `GEMINI_API_KEY` in `.env`.
+Keep `MODE=demo`: Gemini now answers free-form questions in all three languages from
+`data/faq.json` (*"my son is 8, can I bring him?"*, *"what time do you close on Saturday?"*),
+while bookings stay in `bookings.json`. No Google Sheet or Calendar is needed.
+
+`GEMINI_MODEL` defaults to `gemini-3.5-flash-lite`, which answers in about 1–3 seconds. Google
+retires models regularly, so if you get a 404, pick another model your key lists. If Gemini
+fails or takes more than 12 seconds, the offline assistant answers instead, so the chat never
+hangs.
+
 ## LIVE mode setup
 
-1. **Gemini key**: create one at <https://aistudio.google.com/apikey> and set `GEMINI_API_KEY`.
-   The model is configurable with `GEMINI_MODEL`.
+1. **Gemini key**: create one at <https://aistudio.google.com/apikey> and set `GEMINI_API_KEY`
+   (see [DEMO with real AI](#demo-with-real-ai-just-a-gemini-key) for the model settings).
 2. **Service account**: in Google Cloud Console, enable the *Google Sheets API* and the
    *Google Calendar API*, create a service account, download its JSON key to
    `secrets/service_account.json` (git-ignored) and set `GOOGLE_SERVICE_ACCOUNT_FILE`.
@@ -119,7 +136,7 @@ the bot keeps serving the last copy it loaded.
   Telegram and terminal runners are thin adapters, so the zero-key demo is the real bot, and
   tests drive whole conversations without Telegram.
 * **Each integration sits behind a small interface** with a DEMO and a LIVE implementation,
-  chosen in one place (`bot/app.py`). Google libraries are imported only in LIVE mode.
+  chosen in one place (`bot/app.py`). Google libraries are imported only when they're used.
 * **Buttons carry their own state** (`time:haircut:202611181430`), so they keep working after a
   restart. The in-memory session holds only the name and phone being typed.
 * On Telegram, pressing a button **edits the message in place**, so the booking wizard doesn't
@@ -154,8 +171,9 @@ requests at one slot and expects exactly one booking. Remove the lock and it fai
   prompt blocks any answer that leaks it.
 * Secrets are `SecretStr` (never printed). `.env`, `secrets/` and key files are git-ignored.
 * Gemini, Sheets, Calendar and Telegram calls retry transient failures (timeouts, 429, 5xx) with
-  exponential backoff and jitter. If Gemini still fails, the offline assistant answers. Any other
-  error gives the customer a polite message, and the bot keeps running.
+  exponential backoff and jitter. If Gemini still fails, or the whole answer takes more than
+  12 seconds, the offline assistant answers. Any other error gives the customer a polite
+  message, and the bot keeps running.
 
 ## Tests
 
@@ -181,10 +199,15 @@ The suite (~200 tests, a few seconds) never touches the network or your real `.e
 
 Use Telegram Desktop for the customer and your phone (or a second account) as the owner.
 
+Before recording, open the bot once **from the owner account** and press **Start**: Telegram
+doesn't let a bot message anyone who hasn't started it, so until then the owner gets no
+notifications (the bot logs a warning about this at startup). Restart the bot afterwards so the
+owner's command menu appears.
+
 | Time | Action |
 |---|---|
 | 0:00 | `/start`: the menu appears in the language of your Telegram app |
-| 0:05 | Type *Сколько стоит стрижка?*: the price list arrives in Russian |
+| 0:05 | Type a free-form question, e.g. *Можно прийти с сыном, ему 8 лет?*: the answer arrives in Russian |
 | 0:12 | Tap **📅 Записаться** → a service → a day → a time (the message updates in place) |
 | 0:30 | Type a name, tap **📱 Отправить мой номер** |
 | 0:40 | **✅ Подтвердить**: confirmation with a booking ID. The owner's phone gets the notification |
@@ -202,9 +225,12 @@ Use Telegram Desktop for the customer and your phone (or a second account) as th
 
 ## Notes and limitations
 
-* The LIVE adapters are tested offline against the real SDKs (see [Tests](#tests)). What tests
-  can't check is your Google setup (enabled APIs, sharing, keys), so run LIVE mode once with
-  your own keys.
+* The LIVE adapters are tested offline against the real SDKs (see [Tests](#tests)). DEMO with
+  Gemini and the Telegram connection were also checked against the real services. What tests
+  can't check is your Google Cloud setup (enabled APIs, sharing), so run LIVE mode once with
+  your own service account.
+* Gemini's free tier has per-minute and per-day limits. When they're hit, the offline
+  assistant answers until the quota resets.
 * Sessions live in memory: a restart drops a booking that is halfway typed (buttons still work).
 * Slot times use wall-clock arithmetic, which is exact for Asia/Baku (no daylight saving time).
 * Demo shop data, names and the address are fictional.

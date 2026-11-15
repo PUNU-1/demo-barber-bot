@@ -14,13 +14,13 @@ _TAG_RE = re.compile(r"<[^>]+>")
 
 BANNER = """\
 ──────────────────────────────────────────────────────────────
- 💈 Demo Barber · terminal chat ({mode} mode, no Telegram token)
+ 💈 Demo Barber · terminal chat ({mode} mode · {ai})
 ──────────────────────────────────────────────────────────────
  • Chat as a customer, in English, Русский or Azərbaycanca.
  • Buttons show up as [1] [2] ...; type a number to press one.
  • You're also the owner here: /today, /bookings, /cancel <id>.
  • /start shows the menu, /quit exits.
- Set TELEGRAM_BOT_TOKEN in .env to run the same bot on Telegram.
+{hint}
 """
 
 
@@ -64,7 +64,13 @@ def run_terminal(engine: Engine, settings: Settings, *, user_id: int) -> None:
     loop = asyncio.new_event_loop()
     try:
         loop.run_until_complete(engine.warm_up())
-        print(BANNER.format(mode=settings.mode.upper()))
+        ai = f"Gemini {settings.gemini_model}" if settings.gemini_api_key else "offline assistant"
+        hint = (
+            " Run without --terminal to start the same bot on Telegram."
+            if settings.telegram_bot_token
+            else " Set TELEGRAM_BOT_TOKEN in .env to run the same bot on Telegram."
+        )
+        print(BANNER.format(mode=settings.mode.upper(), ai=ai, hint=hint))
         buttons = render(loop.run_until_complete(engine.handle(Incoming(user_id=user_id, text="/start"))))
         while True:
             try:

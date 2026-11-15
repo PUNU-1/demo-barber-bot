@@ -114,7 +114,7 @@ def test_leak_detection():
 # -- settings -------------------------------------------------------------------------------------
 
 ENV_NAMES = ["MODE", "TELEGRAM_BOT_TOKEN", "OWNER_TELEGRAM_ID", "GEMINI_API_KEY", "GOOGLE_SERVICE_ACCOUNT_FILE",
-             "GOOGLE_SHEET_ID", "GOOGLE_CALENDAR_ID", "TIMEZONE"]
+             "GOOGLE_SHEET_ID", "GOOGLE_CALENDAR_ID", "TIMEZONE", "GEMINI_MODEL", "GEMINI_THINKING_LEVEL"]
 
 
 @pytest.fixture

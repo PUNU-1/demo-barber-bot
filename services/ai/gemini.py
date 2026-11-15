@@ -1,4 +1,4 @@
-"""Gemini-backed assistant (LIVE mode), using the google-genai SDK with structured JSON output."""
+"""Gemini-backed assistant, using the google-genai SDK with structured JSON output."""
 
 from __future__ import annotations
 
@@ -37,6 +37,7 @@ class GeminiAssistant:
         model: str,
         *,
         timeout_seconds: float = 20.0,
+        thinking_level: str | None = None,
         transport: object | None = None,  # an httpx transport; tests use httpx.MockTransport
     ) -> None:
         from google import genai
@@ -50,6 +51,11 @@ class GeminiAssistant:
         self._client = genai.Client(api_key=api_key, http_options=http_options)
         self._model = model
         self._canary = secrets.token_hex(8)
+        # None keeps the model's default. Larger models think a lot by default, which is slow for a
+        # chat; "low" helps there. Levels a model doesn't support are rejected by the API (400).
+        self._thinking = (
+            types.ThinkingConfig(thinking_level=thinking_level.upper()) if thinking_level else None
+        )
 
     async def reply(self, message: str, lang: str, knowledge: Knowledge) -> AIReply:
         config = self._types.GenerateContentConfig(
@@ -57,6 +63,7 @@ class GeminiAssistant:
             response_mime_type="application/json",
             response_schema=_GeminiReply,
             temperature=0.2,
+            thinking_config=self._thinking,
         )
 
         async def call():
@@ -77,5 +84,5 @@ class GeminiAssistant:
         if not answer:
             answer_html = i18n.t("not_found", lang) if not parsed.found else ""
         else:
-            answer_html = html.escape(answer[:MAX_ANSWER_CHARS])
+            answer_html = html.escape(answer[:MAX_ANSWER_CHARS], quote=False)
         return AIReply(intent=parsed.intent, found=parsed.found, answer=answer_html)

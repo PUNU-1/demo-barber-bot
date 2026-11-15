@@ -5,7 +5,7 @@ pydantic-settings>=2.4,<3
 tzdata>=2024.1            # IANA time zones for zoneinfo (needed on Windows)
 
 # LIVE integrations: imported lazily, so DEMO mode never touches them
-google-genai>=1.0
+google-genai>=3.3,<4     # thinking levels, async transport hook used in tests
 gspread>=6.1,<7
 google-api-python-client>=2.140
 google-auth>=2.30

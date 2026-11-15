@@ -11,6 +11,7 @@ Google project, keys and sharing are set up right. Run LIVE mode once to check t
 
 from __future__ import annotations
 
+import asyncio
 import json
 from datetime import date, datetime, time, timezone
 from urllib.parse import parse_qs, unquote, urlparse
@@ -64,8 +65,8 @@ class FakeGemini:
         return json.loads(self.requests[index].content)
 
 
-def make_gemini(fake: FakeGemini) -> GeminiAssistant:
-    return GeminiAssistant("test-key-not-real", "gemini-test", transport=httpx2.MockTransport(fake))
+def make_gemini(fake: FakeGemini, **kwargs) -> GeminiAssistant:
+    return GeminiAssistant("test-key-not-real", "gemini-test", transport=httpx2.MockTransport(fake), **kwargs)
 
 
 async def test_gemini_request_shape_and_structured_reply(knowledge):
@@ -87,6 +88,29 @@ async def test_gemini_request_shape_and_structured_reply(knowledge):
     assert config["responseMimeType"] == "application/json"
     assert config["responseSchema"]["required"] == ["intent", "found", "answer"]
     assert config["temperature"] == 0.2
+    assert "thinkingConfig" not in config  # the model's default unless configured
+
+
+async def test_gemini_thinking_level_is_sent_when_configured(knowledge):
+    fake = FakeGemini(gemini_reply({"intent": "smalltalk", "found": True, "answer": "Hi!"}))
+    await make_gemini(fake, thinking_level="low").reply("hi", "en", knowledge)
+    thinking = fake.body()["generationConfig"]["thinkingConfig"]
+    # The SDK sends the snake_case name; Google's JSON parser accepts both spellings.
+    assert thinking.get("thinkingLevel", thinking.get("thinking_level")) == "LOW"
+
+
+async def test_slow_gemini_falls_back_within_the_time_budget(knowledge):
+    class SlowAssistant:
+        async def reply(self, message, lang, knowledge):
+            await asyncio.sleep(30)
+
+    loop = asyncio.get_running_loop()
+    started = loop.time()
+    reply = await FallbackAssistant(SlowAssistant(), MockAssistant(), budget_seconds=0.05).reply(
+        "How much is a haircut?", "en", knowledge
+    )
+    assert "Services and prices" in reply.answer
+    assert loop.time() - started < 2
 
 
 async def test_gemini_booking_and_not_found_intents(knowledge):

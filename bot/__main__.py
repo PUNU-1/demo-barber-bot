@@ -2,7 +2,8 @@
 
 * ``TELEGRAM_BOT_TOKEN`` set -> runs on Telegram.
 * No token (or ``--terminal``) -> chat with the same engine in this terminal.
-* ``MODE=live`` -> Gemini + Google Sheets + Google Calendar; otherwise local DEMO data.
+* ``MODE=live`` -> Gemini + Google Sheets + Google Calendar; otherwise local DEMO data
+  (answered by Gemini if ``GEMINI_API_KEY`` is set, by the offline assistant if not).
 """
 
 from __future__ import annotations

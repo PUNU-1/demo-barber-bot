@@ -86,9 +86,12 @@ def test_sheet_style_values_are_accepted():
 
 
 def _write(path, data):
+    # Two quick writes can get the same mtime (Windows updates it in ~15 ms steps), so move it
+    # a second past the previous version to make every edit visible to the reloader.
+    previous = path.stat().st_mtime_ns if path.exists() else 0
     path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
     stat = path.stat()
-    os.utime(path, ns=(stat.st_atime_ns, stat.st_mtime_ns + 1_000_000_000))  # make the change visible
+    os.utime(path, ns=(stat.st_atime_ns, max(stat.st_mtime_ns, previous) + 1_000_000_000))
 
 
 async def test_json_knowledge_reloads_and_survives_bad_edits(tmp_path):

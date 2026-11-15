@@ -156,11 +156,20 @@ async def _set_commands(bot: Bot, owner_id: int | None) -> None:
                 [BotCommand(command=c, description=d) for c, d in commands],
                 language_code=None if lang == "en" else lang,
             )
-        if owner_id:
-            owner = [BotCommand(command=c, description=d) for c, d in CUSTOMER_COMMANDS["en"] + OWNER_COMMANDS]
-            await bot.set_my_commands(owner, scope=BotCommandScopeChat(chat_id=owner_id))
-    except Exception as exc:  # e.g. the owner hasn't started the bot yet
+    except Exception as exc:
         log.warning("Could not register the command menu: %s", exc)
+    if not owner_id:
+        return
+    try:
+        owner = [BotCommand(command=c, description=d) for c, d in CUSTOMER_COMMANDS["en"] + OWNER_COMMANDS]
+        await bot.set_my_commands(owner, scope=BotCommandScopeChat(chat_id=owner_id))
+    except Exception as exc:
+        # Telegram answers "chat not found" until that user has opened the bot at least once.
+        log.warning(
+            "Owner menu not set (%s). Open the bot from the OWNER_TELEGRAM_ID account and press Start, "
+            "then restart; until then owner notifications can't be delivered either.",
+            exc,
+        )
 
 
 def _incoming_from(user, **fields) -> Incoming:

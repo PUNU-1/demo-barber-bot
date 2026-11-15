@@ -35,7 +35,8 @@ class Settings(BaseSettings):
 
     # LIVE integrations
     gemini_api_key: SecretStr | None = None
-    gemini_model: str = "gemini-2.5-flash"
+    gemini_model: str = "gemini-3.5-flash-lite"  # fast and cheap; plenty for answering from a FAQ
+    gemini_thinking_level: Literal["minimal", "low", "medium", "high"] | None = None
     google_service_account_file: Path | None = None
     google_sheet_id: str | None = None
     google_calendar_id: str | None = None
@@ -60,6 +61,11 @@ class Settings(BaseSettings):
     @field_validator("mode", mode="before")
     @classmethod
     def _lower(cls, value: object) -> object:
+        return value.strip().lower() if isinstance(value, str) else value
+
+    @field_validator("gemini_thinking_level", mode="before")
+    @classmethod
+    def _lower_level(cls, value: object) -> object:
         return value.strip().lower() if isinstance(value, str) else value
 
     @field_validator("log_level", mode="before")
