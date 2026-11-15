@@ -1,0 +1,38 @@
+# Secrets: never commit these
+.env
+.env.*
+!.env.example
+secrets/
+*service_account*.json
+*service-account*.json
+*credentials*.json
+client_secret*.json
+*.pem
+*.key
+
+# Runtime data written by the bot
+data/bookings.json
+data/*.tmp
+logs/
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,82 @@
+{
+  "info": {
+    "shop_name": "Demo Barber",
+    "address": "15 Demo Street, Baku (fictional address)",
+    "phone": "+994 12 000 00 00",
+    "currency": "AZN",
+    "maps_url": ""
+  },
+  "hours": [
+    {"day": "Monday", "open": "10:00", "close": "20:00"},
+    {"day": "Tuesday", "open": "10:00", "close": "20:00"},
+    {"day": "Wednesday", "open": "10:00", "close": "20:00"},
+    {"day": "Thursday", "open": "10:00", "close": "20:00"},
+    {"day": "Friday", "open": "10:00", "close": "20:00"},
+    {"day": "Saturday", "open": "10:00", "close": "18:00"},
+    {"day": "Sunday", "open": "", "close": ""}
+  ],
+  "services": [
+    {
+      "id": "haircut",
+      "name_en": "Men's haircut",
+      "name_ru": "Мужская стрижка",
+      "name_az": "Kişi saç kəsimi",
+      "duration_min": 30,
+      "price": 15
+    },
+    {
+      "id": "beard",
+      "name_en": "Beard trim",
+      "name_ru": "Стрижка бороды",
+      "name_az": "Saqqal düzəltmə",
+      "duration_min": 30,
+      "price": 10
+    },
+    {
+      "id": "combo",
+      "name_en": "Haircut + beard",
+      "name_ru": "Стрижка + борода",
+      "name_az": "Saç kəsimi + saqqal",
+      "duration_min": 60,
+      "price": 22
+    },
+    {
+      "id": "kids",
+      "name_en": "Kids' haircut (under 12)",
+      "name_ru": "Детская стрижка (до 12 лет)",
+      "name_az": "Uşaq saç kəsimi (12 yaşadək)",
+      "duration_min": 30,
+      "price": 10
+    }
+  ],
+  "faq": [
+    {
+      "question": "Do you accept card payments?",
+      "answer_en": "Yes, we accept cash and all major bank cards.",
+      "answer_ru": "Да, мы принимаем наличные и все основные банковские карты.",
+      "answer_az": "Bəli, nağd pul və bütün əsas bank kartları ilə ödəniş qəbul edirik.",
+      "keywords": "pay*, cash, accept card*, by card, card payment*, bank card*, credit card*, debit card*, оплат*, налич*, картой, банковск* карт*, принимаете карт*, nağd*, ödə*, kartla, kart qəbul*, bank kart*"
+    },
+    {
+      "question": "Is there parking?",
+      "answer_en": "Yes, there is free street parking right in front of the shop.",
+      "answer_ru": "Да, прямо перед барбершопом есть бесплатная парковка.",
+      "answer_az": "Bəli, bərbərxananın qarşısında pulsuz avtomobil dayanacağı var.",
+      "keywords": "park*, парков*, припарков*, maşın*, dayanacaq*, dayanacağ*"
+    },
+    {
+      "question": "Do you cut women's hair?",
+      "answer_en": "We specialise in men's and kids' haircuts, so we don't offer women's services.",
+      "answer_ru": "Мы специализируемся на мужских и детских стрижках, женских услуг у нас нет.",
+      "answer_az": "Biz kişi və uşaq saç kəsimində ixtisaslaşmışıq, qadın xidmətləri göstərmirik.",
+      "keywords": "women*, woman, female, girl*, ladies, жен*, девуш*, девоч*, qadın*, qız*"
+    },
+    {
+      "question": "Do you have Wi-Fi?",
+      "answer_en": "Yes, free Wi-Fi is available while you wait. Ask the barber for the password.",
+      "answer_ru": "Да, пока вы ждёте, доступен бесплатный Wi-Fi. Пароль подскажет мастер.",
+      "answer_az": "Bəli, gözləyərkən pulsuz Wi-Fi var. Şifrəni ustadan soruşa bilərsiniz.",
+      "keywords": "wifi, wi fi, вайфай, вай фай, интернет*, internet*"
+    }
+  ]
+}
